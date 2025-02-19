@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Equipment Health Alerts</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f0f0f0;
+        }
+        h1 {
+            color: #333;
+        }
+        .alert {
+            background-color: #ffebee;
+            border: 1px solid #ffcdd2;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        #plot-container {
+            margin-top: 20px;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Real-Time Equipment Health Alerts</h1>
+    <div id="alerts">
+        {% for alert in alerts %}
+            <div class="alert">{{ alert }}</div>
+        {% endfor %}
+    </div>
+    <div id="plot-container">
+        <h2>Equipment Health Plot</h2>
+        <img id="health-plot" src="" alt="Real-Time Health Plot" style="display: none;">
+    </div>
+
+    <script>
+        function refreshPage() {
+            location.reload();
+        }
+        setInterval(refreshPage, 5000); // Refresh every 5 seconds
+
+        // Fetch and update the plot every 5 seconds
+        function updatePlot() {
+            fetch('/latest_plot')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('No plot available');
+                    }
+                    return response.text();
+                })
+                .then(plotPath => {
+                    if (plotPath) {
+                        const img = document.getElementById('health-plot');
+                        img.src = plotPath;
+                        img.style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.log('No plot available yet:', error);
+                    const img = document.getElementById('health-plot');
+                    img.style.display = 'none';  // Hide the image if no plot is available
+                });
+        }
+        setInterval(updatePlot, 5000); // Update plot every 5 seconds
+    </script>
+</body>
+</html>

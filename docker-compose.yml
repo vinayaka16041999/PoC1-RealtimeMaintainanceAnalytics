@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  data_generator:
+    build: ./data_generator
+    depends_on:
+      - redis
+    networks:
+      - predictive_maintenance_network
+
+  analytics_engine:
+    build: ./analytics_engine
+    depends_on:
+      - redis
+      - data_generator
+    volumes:
+      - plots:/app/plots
+    networks:
+      - predictive_maintenance_network
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - redis
+      - analytics_engine
+    ports:
+      - "5000:5000"
+    volumes:
+      - plots:/app/static/plots
+    networks:
+      - predictive_maintenance_network
+
+  redis:
+    image: redis:latest
+    volumes:
+      - redis-data:/data
+    networks:
+      - predictive_maintenance_network
+
+volumes:
+  plots:
+  redis-data:
+
+networks:
+  predictive_maintenance_network:
+    driver: bridge

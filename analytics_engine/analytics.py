@@ -99,7 +99,7 @@ def process_reading(reading):
         health_score = health_score
 
     # Check for alerts and publish to Redis
-    if is_anomaly and health_score < 70:  # Adjusted alert logic as per previous suggestions
+    if is_anomaly or health_score < 90:  # Adjusted alert logic as per previous suggestions
         alert_message = f"ALERT at {reading['timestamp']}: Machine {reading['machine_id']} - Health Score: {health_score:.2f}, Anomaly: {bool(is_anomaly)}"
         redis_client.publish('alerts_channel', alert_message)  # Publish to Redis
         logging.info(alert_message)  # Log to file

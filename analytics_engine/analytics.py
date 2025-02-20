@@ -91,15 +91,14 @@ def process_reading(reading):
         abs(anomaly_score) * 0.2
     ) * 10
 
-    bias = random.choices(range(2), weights=(0.1,0.9))
-    weight = random.randint(1, 100)*0.01
-    if bias==0:
+    weight = random.randint(1, 70)*0.01
+    if is_anomaly:
         health_score = health_score * weight
     else:
         health_score = health_score
 
     # Check for alerts and publish to Redis
-    if is_anomaly or health_score < 90:  # Adjusted alert logic as per previous suggestions
+    if is_anomaly and health_score < 70:  # Adjusted alert logic as per previous suggestions
         alert_message = f"ALERT at {reading['timestamp']}: Machine {reading['machine_id']} - Health Score: {health_score:.2f}, Anomaly: {bool(is_anomaly)}"
         redis_client.publish('alerts_channel', alert_message)  # Publish to Redis
         logging.info(alert_message)  # Log to file
@@ -138,37 +137,6 @@ def retrain_model():
     model.fit(scaler.transform(X))
     print(f"Model retrained at {datetime.now().isoformat()} with {len(historical_data)} samples")
 
-def visualize_realtime(data_window, interval=300, save_path='/app/plots/'):
-    if len(data_window) < interval:
-        return
-
-    plt.figure(figsize=(15, 5))
-    timestamps = [d['timestamp'] for d in data_window]
-    health_scores = [d['health_score'] for d in data_window]
-    anomalies = [d['anomaly'] for d in data_window]
-
-    plt.plot(timestamps, health_scores, label='Health Score')
-    plt.scatter(timestamps, [s if a else None for s, a in zip(health_scores, anomalies)], c='red', label='Anomalies', alpha=0.5)
-    plt.title('Real-Time Equipment Health Monitoring')
-    plt.xlabel('Time')
-    plt.ylabel('Health Score')
-    plt.legend()
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-
-    # Ensure the plots directory exists
-    os.makedirs(save_path, exist_ok=True)
-
-    # Generate unique filename
-    plot_filename = f"health_plot_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
-    plot_path = os.path.join(save_path, plot_filename)
-    plt.savefig(plot_path)
-    plt.close()
-
-    print(f"Saved plot to {plot_path}")
-
-    # Publish the plot filename to Redis for the frontend to fetch
-    redis_client.set('latest_plot', plot_filename)
 
 if __name__ == "__main__":
     # Fit initial models before starting to process
@@ -185,6 +153,3 @@ if __name__ == "__main__":
             result = process_reading(reading)
             reading.update(result)
             data_window.append(reading)
-
-            if len(data_window) >= 300:  # Visualize every 300 readings
-                visualize_realtime(data_window)

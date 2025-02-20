@@ -44,30 +44,6 @@
             location.reload();
         }
         setInterval(refreshPage, 5000); // Refresh every 5 seconds
-
-        // Fetch and update the plot every 5 seconds
-        function updatePlot() {
-            fetch('/latest_plot')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('No plot available');
-                    }
-                    return response.text();
-                })
-                .then(plotPath => {
-                    if (plotPath) {
-                        const img = document.getElementById('health-plot');
-                        img.src = plotPath;
-                        img.style.display = 'block';
-                    }
-                })
-                .catch(error => {
-                    console.log('No plot available yet:', error);
-                    const img = document.getElementById('health-plot');
-                    img.style.display = 'none';  // Hide the image if no plot is available
-                });
-        }
-        setInterval(updatePlot, 5000); // Update plot every 5 seconds
     </script>
 </body>
 </html>

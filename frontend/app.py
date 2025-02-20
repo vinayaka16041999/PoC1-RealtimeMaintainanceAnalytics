@@ -29,14 +29,6 @@ threading.Thread(target=update_alerts, daemon=True).start()
 def index():
     return render_template('index.html', alerts=alerts)
 
-@app.route('/latest_plot')
-def get_latest_plot():
-    plot_filename = redis_client.get('latest_plot')
-    if plot_filename:
-        plot_filename = plot_filename.decode('utf-8')
-        plot_path = f'/static/plots/{plot_filename}'
-        return plot_path
-    return jsonify({'error': 'No plot available'}), 404  # Return a JSON error with 404 status if no plot exists
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
